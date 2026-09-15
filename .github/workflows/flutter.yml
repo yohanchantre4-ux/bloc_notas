@@ -1,0 +1,72 @@
+```yaml
+name: Flutter CI/CD
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el código del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configurar Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.2'
+          channel: 'stable'
+          cache: true
+
+      # 3. Verificar Flutter
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      # 4. Instalar dependencias
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5. Analizar el código
+      - name: Analyze
+        run: flutter analyze
+
+      # 6. Ejecutar pruebas
+      - name: Run tests
+        run: flutter test
+
+      # 7. Compilar aplicación Web
+      - name: Build Flutter Web
+        run: flutter build web --release
+
+      # 8. Guardar los archivos compilados
+      - name: Upload build artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  # Desplegar en GitHub Pages
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
