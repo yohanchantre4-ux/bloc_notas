@@ -14,36 +14,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Descargar el código
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Configurar Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      # Instalar dependencias
       - name: Install dependencies
         run: flutter pub get
 
-      # Analizar el proyecto
       - name: Analyze
         run: flutter analyze
 
-      # Ejecutar pruebas
       - name: Run tests
         run: flutter test
 
-      # Construir Flutter Web
-      # CAMBIA "NOMBRE-DEL-REPOSITORIO"
-      # por el nombre exacto de tu repositorio
       - name: Build Flutter Web
         run: flutter build web --release --base-href "/bloc_notas/"
 
-      # Preparar archivos para GitHub Pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
