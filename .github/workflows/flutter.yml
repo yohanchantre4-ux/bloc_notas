@@ -1,59 +1,49 @@
-```yaml
-name: Deploy Flutter Web
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - master
-  pull_request:
-    branches:
-      - master
+      - master # O 'master', cámbialo según el nombre de tu rama principal
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Obtener el código fuente
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      # 2. Configurar Java para herramientas de Flutter/Android si fueran requeridas
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Configurar entorno de Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: true
+          channel: 'stable'
+          # flutter-version: '3.19.0' # Puedes especificar una versión exacta si lo requieres
 
+      # 4. Instalar dependencias del proyecto
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze
+      # 5. Construir la aplicación web
+      # Nota: Si tu repositorio NO es un dominio personalizado y se sirve desde subdominio (ej: usuario.github.io/nombre-repo),
+      # la opción --base-href es crucial para que los recursos estáticos carguen correctamente.
+      - name: Build Web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 
-      - name: Run tests
-        run: flutter test
-
-      - name: Build Flutter Web
-        run: flutter build web --release --base-href "/bloc_notas/"
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/web
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
+      # 6. Desplegar en la rama gh-pages
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-```
+        uses: Peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
