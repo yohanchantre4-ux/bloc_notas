@@ -1,5 +1,5 @@
 ```yaml
-name: bloc_notas
+name: Deploy Flutter Web
 
 on:
   push:
@@ -14,45 +14,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar el código del repositorio
+      # Descargar el código
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar Flutter
+      # Configurar Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.2'
-          channel: 'stable'
+          channel: stable
           cache: true
 
-      # 3. Verificar Flutter
-      - name: Flutter Doctor
-        run: flutter doctor -v
-
-      # 4. Instalar dependencias
+      # Instalar dependencias
       - name: Install dependencies
         run: flutter pub get
 
-      # 5. Analizar el código
+      # Analizar el proyecto
       - name: Analyze
         run: flutter analyze
 
-      # 6. Ejecutar pruebas
+      # Ejecutar pruebas
       - name: Run tests
         run: flutter test
 
-      # 7. Compilar aplicación Web
+      # Construir Flutter Web
+      # CAMBIA "NOMBRE-DEL-REPOSITORIO"
+      # por el nombre exacto de tu repositorio
       - name: Build Flutter Web
-        run: flutter build web --release
+        run: flutter build web --release --base-href "/bloc_notas/"
 
-      # 8. Guardar los archivos compilados
-      - name: Upload build artifact
+      # Preparar archivos para GitHub Pages
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
-  # Desplegar en GitHub Pages
   deploy:
     needs: build
     runs-on: ubuntu-latest
